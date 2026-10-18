@@ -1,11 +1,5 @@
-// Servicio de acceso a la API REST Countries (https://restcountries.com)
-// La API KEY y la URL base se leen del archivo .env mediante import.meta.env:
-//   VITE_API_KEY  -> tu clave de API (obligatoria desde la migración a v5)
-//   VITE_API_URL  -> URL base, p.ej. https://api.restcountries.com/v3.1
-//                     o https://api.restcountries.com/v5
-
-export const API_KEY = (import.meta.env.VITE_API_KEY ?? '').trim()
-export const API_URL = (import.meta.env.VITE_API_URL ?? 'https://api.restcountries.com/v3.1').trim()
+// Las peticiones pasan por el backend para que las credenciales nunca lleguen al navegador.
+const API_URL = '/api'
 
 const FIELDS = [
   'name','topLevelDomain','cca2','alpha2Code','cca3','alpha3Code','independent',
@@ -14,18 +8,6 @@ const FIELDS = [
   'flag','flags','coatOfArms','car','timezones','startOfWeek','altSpellings',
   'currencies','currency','gini','fifa',
 ].join(',')
-
-function buildHeaders() {
-  // La API KEY se lee del .env. Se envía tanto en la cabecera Authorization
-  // (formato Bearer exigido por la nueva API v5) como en x-rapidapi-key por
-  // compatibilidad con RapidAPI.
-  const headers = { Accept: 'application/json' }
-  if (API_KEY) {
-    headers['Authorization'] = `Bearer ${API_KEY}`
-    headers['x-rapidapi-key'] = API_KEY
-  }
-  return headers
-}
 
 // Normaliza el "envelope" { success, data, errors } que devuelven las
 // versiones nuevas de la API, además de las respuestas en array planas.
@@ -47,16 +29,20 @@ async function parseResponse(res) {
     return body.data
   }
   if (!res.ok) {
-    const err = new Error(`Error ${res.status} al consultar la API: ${res.statusText}`)
+    const messages = body?.errors?.map((error) => error.message || error.code).filter(Boolean)
+    const message = messages?.join(' | ') || body?.error
+    const err = new Error(
+      message || `Error ${res.status} al consultar la API: ${res.statusText}`,
+    )
     err.status = res.status
-    err.notFound = res.status === 404
+    err.notFound = res.status === 404 || /not\s*found/i.test(message ?? '')
     throw err
   }
   return body
 }
 
 async function getJson(url) {
-  const res = await fetch(url, { headers: buildHeaders() })
+  const res = await fetch(url, { headers: { Accept: 'application/json' } })
   return parseResponse(res)
 }
 

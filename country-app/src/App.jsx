@@ -146,7 +146,7 @@ export default function App() {
         <a href="https://restcountries.com" target="_blank" rel="noreferrer" className="underline">
           REST Countries
         </a>{' '}
-        · API Key leída desde <code>.env</code> (VITE_API_KEY)
+        · consultas gestionadas por el backend
       </footer>
 
       {selected && (

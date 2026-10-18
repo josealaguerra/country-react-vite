@@ -1,7 +1,3 @@
-import { API_KEY, API_URL } from '../api/countriesApi'
-
-const isKeyConfigured = Boolean(API_KEY)
-
 export default function Header({ search, onSearchChange, darkMode, onToggleDark }) {
   return (
     <header className="sticky top-0 z-20 bg-white/90 backdrop-blur shadow-sm dark:bg-slate-900/90">
@@ -24,19 +20,12 @@ export default function Header({ search, onSearchChange, darkMode, onToggleDark 
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Indicador de API Key leída desde .env */}
           <span
-            title={`API URL: ${API_URL}`}
-            className={`hidden md:inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
-              isKeyConfigured
-                ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
-                : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-            }`}
+            title="Las consultas a REST Countries pasan por el backend"
+            className="hidden md:inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/50 dark:text-green-300"
           >
-            <span
-              className={`h-2 w-2 rounded-full ${isKeyConfigured ? 'bg-green-500' : 'bg-slate-400'}`}
-            />
-            {isKeyConfigured ? 'API Key configurada (.env)' : 'API pública (sin key)'}
+            <span className="h-2 w-2 rounded-full bg-green-500" />
+            API protegida por backend
           </span>
 
           <input

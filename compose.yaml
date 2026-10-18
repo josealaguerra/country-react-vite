@@ -1,0 +1,25 @@
+services:
+  countries-app:
+    build:
+      context: ./country-app
+      target: ${APP_MODE:-production}
+    depends_on:
+      countries-api:
+        condition: service_healthy
+    environment:
+      API_PROXY_TARGET: http://countries-api:3000
+    ports:
+      - "${APP_PORT:-90}:80"
+    volumes:
+      - ./country-app:/app
+      - /app/node_modules
+      - ./country-app/.env.docker:/app/.env:ro
+
+  countries-api:
+    build:
+      context: ./server
+    env_file:
+      - path: ./country-app/.env
+        required: false
+    expose:
+      - "3000"
