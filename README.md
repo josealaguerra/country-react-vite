@@ -18,12 +18,14 @@ CountriesDex es una aplicación web para explorar información de países de tod
 
 ## Instalación
 
-Los comandos npm se ejecutan desde el directorio `country-app`, donde se encuentra `package.json`:
+Instala las dependencias del frontend desde `country-app`, donde se encuentra su `package-lock.json`:
 
 ```sh
 cd country-app
 npm ci
 ```
+
+Los comandos `npm run dev`, `npm run build` y `npm run preview` se pueden ejecutar desde la raíz del repositorio o desde `country-app`.
 
 ## Configuración de la API
 
@@ -85,14 +87,15 @@ cd server
 node --env-file=../country-app/.env server.js
 ```
 
-Después, en otra terminal:
+Después, en otra terminal, desde la raíz del repositorio:
 
 ```sh
-cd country-app
 npm run dev
 ```
 
 Abre en el navegador la URL local que muestra Vite (normalmente `http://localhost:5173`).
+
+Si solo quieres abrir la interfaz, Vite puede iniciarse sin el backend; las consultas a países mediante `/api` funcionarán cuando el backend esté en ejecución en `http://127.0.0.1:3000`.
 
 ## Compilar y previsualizar
 

@@ -1,0 +1,9 @@
+{
+  "name": "country-react-vite",
+  "private": true,
+  "scripts": {
+    "dev": "cd country-app && npm run dev",
+    "build": "cd country-app && npm run build",
+    "preview": "cd country-app && npm run preview"
+  }
+}
