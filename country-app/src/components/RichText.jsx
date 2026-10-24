@@ -15,7 +15,6 @@ import { toSafeHtml, escapeHtml } from '../utils/security.js'
 export default function RichText({ html, as = 'div', testId }) {
   const safe = useMemo(() => toSafeHtml(html), [html])
   const Tag = as
-  // eslint-disable-next-line no-unsanitized/property -- `safe` is DOMPurify/TrustedTypes output (audited sink).
   return <Tag data-testid={testId} dangerouslySetInnerHTML={{ __html: safe }} />
 }
 
