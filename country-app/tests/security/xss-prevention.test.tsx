@@ -13,6 +13,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import Header from '../../src/components/Header.jsx'
 import RichText from '../../src/components/RichText.jsx'
 import {
@@ -96,8 +97,9 @@ describe('escapeHtml / sanitizeUrl — output encoding (XSS Prevention Cheat She
   })
 
   it('URL allow-list keeps https but kills javascript:/data: URIs (ASVS V5.3.3)', () => {
-    expect(sanitizeUrl('https://google.com/maps')).toBe('https://maps.google.com/')
-      .toMatch(/^https:/)
+    const safeUrl = sanitizeUrl('https://google.com/maps')
+    expect(safeUrl).toBe('https://google.com/maps')
+    expect(safeUrl).toMatch(/^https:/)
     expect(sanitizeUrl('javascript:alert(document.domain)')).toBe('')
     expect(sanitizeUrl('data:text/html;base64,PHNjcmlwdD4=')).toBe('')
     expect(sanitizeUrl('vbScript:msgbox(1)')).toBe('')
@@ -156,15 +158,16 @@ describe('<Header> search input — integration of sanitiser at the UI boundary'
     const user = userEvent.setup()
     let captured = ''
     const Controlled = () => {
-      // Mirror App.jsx wiring: onChange feeds sanitizeSearchInput before setState.
+      const [search, setSearch] = useState('')
+      captured = search
       return (
         <Header
-          search={captured}
+          search={search}
           onSearchChange={(v) => {
             try {
-              captured = sanitizeSearchInput(v)
-            } catch {
-              /* rejected → keep previous value (fail closed) */
+              setSearch(sanitizeSearchInput(v))
+            } catch (error) {
+              if (!(error instanceof TypeError)) throw error
             }
           }}
           darkMode={false}

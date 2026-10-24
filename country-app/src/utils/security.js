@@ -95,6 +95,9 @@ export function validateResourceName(value) {
   if (!SAFE_NAME_RE.test(trimmed)) {
     throw new TypeError('Resource name rejected: disallowed characters')
   }
+  if (trimmed.split('/').some((segment) => segment === '.' || segment === '..')) {
+    throw new TypeError('Resource name rejected: path traversal')
+  }
   if (JS_URL_RE.test(trimmed)) {
     throw new TypeError('Resource name rejected: dangerous URL scheme')
   }
@@ -195,7 +198,7 @@ export function sanitizeUrl(url) {
  * ASVS V6.4: no secrets in localStorage/sessionStorage.
  */
 const SENSITIVE_KEY_RE =
-  /(^|_)(pan|cardnumber|card_number|cvv|cvc|cvv2|cid|track1|track2|pinblock|pin_block|password|passwd|secret|authorization|apikey|api_key|access_token|refreshtoken|refresh_token|sessiontoken|session_token|jwt|ssn|social_security)(_|$)/i
+  /(^|_)(pan|cardnumber|card_number|cvv|cvc|cvc2|cvv2|cid|track1|track2|pinblock|pin_block|password|passwd|secret|authorization|apikey|api_key|access_token|refreshtoken|refresh_token|sessiontoken|session_token|jwt|ssn|social_security)(_|$)/i
 
 /** Expiry date like 12/28 printed next to a security-code mention. */
 const EXP_DATE_RE = /\b(0[1-9]|1[0-2])\s?\/\s?(\d{2}|\d{4})\b/
@@ -213,7 +216,11 @@ const BEARER_RE = /^Bearer\s+[A-Za-z0-9\-._~+/]{20,}=*$/i
  */
 export function containsSensitiveData(key, value) {
   if (typeof key !== 'string') return true // fail closed on weird keys
-  const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+  const normalizedKey = key
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
   if (SENSITIVE_KEY_RE.test(`_${normalizedKey}_`)) return true
 
   if (typeof value === 'string') {

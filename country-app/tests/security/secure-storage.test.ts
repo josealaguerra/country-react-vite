@@ -39,6 +39,7 @@ describe('containsSensitiveData — PCI DSS Req. 3.3 detection engine', () => {
 
   it('flags composite/obfuscated keys like "checkout_card_pan"', () => {
     expect(containsSensitiveData('checkoutCardPan', 'x')).toBe(true)
+    expect(containsSensitiveData('checkout_card_pan', 'x')).toBe(true)
     expect(containsSensitiveData('user-password-hash', 'x')).toBe(true)
   })
 

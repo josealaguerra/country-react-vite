@@ -47,7 +47,7 @@ export function toSafeUserError(err) {
   // absolute filesystem paths before display.
   message = message
     .split('\n')[0]
-    .replace(/(?:at\s+\S+\s+\()?.*$/g, '')
+    .replace(/\s+at\s+\S+(?:\s+\([^)]*\))?.*$/g, '')
     .replace(/\/(?:home|var|usr|opt|app)\/\S*/g, '[internal path redacted]')
     .trim()
 

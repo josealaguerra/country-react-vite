@@ -4,6 +4,8 @@ import RegionFilter from './components/RegionFilter.jsx'
 import CountryCard from './components/CountryCard.jsx'
 import CountryDetail from './components/CountryDetail.jsx'
 import { fetchAllCountries, fetchCountryByName } from './api/countriesApi.js'
+import { toSafeUserError } from './components/ErrorBoundary.jsx'
+import { sanitizeSearchInput } from './utils/security.js'
 
 const PAGE_SIZE = 24
 
@@ -20,6 +22,14 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(
     () => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false,
   )
+
+  const handleSearchChange = useCallback((value) => {
+    try {
+      setSearch(sanitizeSearchInput(value))
+    } catch (error) {
+      if (!(error instanceof TypeError)) throw error
+    }
+  }, [])
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode)
@@ -38,7 +48,7 @@ export default function App() {
       })
       .catch((err) => {
         if (active) {
-          setError(err.message)
+          setError(toSafeUserError(err).message)
           setLoading(false)
         }
       })
@@ -84,7 +94,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-100 text-slate-900 transition-colors dark:bg-slate-900 dark:text-slate-100">
       <Header
         search={search}
-        onSearchChange={setSearch}
+        onSearchChange={handleSearchChange}
         darkMode={darkMode}
         onToggleDark={() => setDarkMode((d) => !d)}
       />

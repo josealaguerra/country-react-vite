@@ -1,5 +1,5 @@
 /**
- * api-error-handling.test.ts — API response & error-handling security suite.
+ * api-error-handling.test.tsx — API response & error-handling security suite.
  *
  * Framework mapping:
  *  - OWASP ASVS v4.0.3 V7.4 (error handling must not leak internals),
@@ -48,9 +48,7 @@ describe('countriesApi — malformed/unexpected responses (ASVS V5.1.2)', () => 
 
   it('surfaces envelope errors but marks 404s as notFound (no raw upstream dump)', async () => {
     mockFetch(404, { success: false, errors: [{ message: 'Country not found' }] })
-    const err = await searchCountriesByName('zzz').catch((e) => e)
-    // searchCountriesByName converts notFound → [] (graceful degradation).
-    expect(err).toBeUndefined()
+    await expect(searchCountriesByName('zzz')).resolves.toEqual([])
   })
 
   it('NEVER forwards an API key that a misconfigured proxy echoed back', async () => {
@@ -59,9 +57,12 @@ describe('countriesApi — malformed/unexpected responses (ASVS V5.1.2)', () => 
       success: false,
       errors: [{ message: 'upstream rejected Authorization: Bearer sk-live-LEAKEDKEY1234567890' }],
     })
-    const err: Error = await fetchAllCountries().then(() => new Error('should have thrown'))
+    const err = await fetchAllCountries().then(
+      () => null,
+      (error: Error) => error,
+    )
     // The message may exist internally…
-    expect(err.message).toMatch(/Bearer/)
+    expect(err?.message).toMatch(/Authorization/)
     // …but the SAFE projection shown to users must scrub it entirely.
     const safe = toSafeUserError(err)
     expect(safe.message).toBe(GENERIC_ERROR_MESSAGE)
@@ -118,12 +119,10 @@ describe('<App> integration — network failures show NO sensitive internals', (
       errors: [{ message: 'internal auth failure for api_key=SECRET_DO_NOT_SHOW' }],
     })
     render(<App />)
-    const alert = await screen.findByRole(/alert|status/).catch(() => null)
     // Whatever container appears, the secret must be absent from the DOM.
     await waitFor(() => {
       expect(document.body.textContent).not.toMatch(/SECRET_DO_NOT_SHOW|api_key/i)
     })
-    void alert
   })
 
   it('renders safely when fetch itself rejects (network down)', async () => {
